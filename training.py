@@ -71,7 +71,7 @@ def train_model(num_training_steps, num_train_epochs, model, tokenizer, datasets
         model.train()
         for step, batch in enumerate(train_dataloader):
             outputs = model(**batch)
-            print("outputs: ", outputs)
+            # print("outputs: ", outputs)
             loss = outputs.loss
             accelerator.backward(loss)
 
