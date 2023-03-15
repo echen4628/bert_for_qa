@@ -5,7 +5,7 @@ from transformers import AutoTokenizer
 
 
 
-def preprocess_training_examples(examples, max_length=384, stride=128):
+def preprocess_training_examples(tokenizer, examples, max_length=384, stride=128):
     questions = [q.strip() for q in examples["question"]]
     inputs = tokenizer(
         questions,
@@ -60,7 +60,7 @@ def preprocess_training_examples(examples, max_length=384, stride=128):
     inputs["end_positions"] = end_positions
     return inputs
 
-def preprocess_validation_examples(examples, max_length=384, stride=128):
+def preprocess_validation_examples(tokenizer, examples, max_length=384, stride=128):
     questions = [q.strip() for q in examples["question"]]
     inputs = tokenizer(
         questions,

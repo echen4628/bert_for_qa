@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 from torch.utils.data import DataLoader
-from transformers import default_data_collator, AutoModelForQuestionAnswering
+from transformers import default_data_collator, AutoModelForQuestionAnswering, AutoTokenizer
 from dataset import *
 from torch.optim import AdamW
 from accelerate import Accelerator
@@ -10,6 +10,7 @@ from huggingface_hub import Repository, get_full_repo_name, notebook_login
 from tqdm.auto import tqdm
 import evaluate
 import collections
+
 
 
 def compute_metrics(metric, start_logits, end_logits, features, examples, n_best=20, max_answer_length=30):
@@ -61,7 +62,7 @@ def compute_metrics(metric, start_logits, end_logits, features, examples, n_best
     theoretical_answers = [{"id": ex["id"], "answers": ex["answers"]} for ex in examples]
     return metric.compute(predictions=predicted_answers, references=theoretical_answers)
 
-def train_model(num_training_steps, num_train_epochs, model, train_dataloader, eval_dataloader, 
+def train_model(num_training_steps, num_train_epochs, model, tokenizer, datasets, train_dataloader, validation_dataset, eval_dataloader, 
                 accelerator,optimizer, lr_scheduler, output_dir, metric, repo):
     progress_bar = tqdm(range(num_training_steps))
 
@@ -97,7 +98,7 @@ def train_model(num_training_steps, num_train_epochs, model, train_dataloader, e
         end_logits = end_logits[: len(validation_dataset)]
 
         metrics = compute_metrics(
-            metric, start_logits, end_logits, validation_dataset, raw_datasets["validation"]
+            metric, start_logits, end_logits, validation_dataset, datasets["validation"]
         )
         print(f"epoch {epoch}:", metrics)
 
@@ -128,13 +129,12 @@ if __name__ == "__main__":
     max_length = 384
     stride = 128
     
-    train_dataset = small_dataset["train"].map(
-                    preprocess_training_examples,
+    train_dataset = small_dataset["train"].map(lambda x: preprocess_training_examples(tokenizer, x),
                     batched=True,
                     remove_columns=small_dataset["train"].column_names,)
     
     validation_dataset = small_dataset["validation"].map(
-                                                        preprocess_validation_examples,
+                                                        lambda x: preprocess_training_examples(tokenizer, x),
                                                         batched=True,
                                                         remove_columns=small_dataset["validation"].column_names,)
 
@@ -183,7 +183,7 @@ if __name__ == "__main__":
     output_dir = "bert-finetuned-squad-accelerate"
     repo = Repository(output_dir, clone_from=repo_name)
 
-    train_model(num_training_steps, num_train_epochs, model, train_dataloader, eval_dataloader, 
+    train_model(num_training_steps, num_train_epochs, model, tokenizer,small_dataset, train_dataloader, validation_dataset, eval_dataloader, 
                 accelerator,optimizer, lr_scheduler, output_dir, metric, repo)
 
     
