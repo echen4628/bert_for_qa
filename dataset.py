@@ -6,6 +6,9 @@ from transformers import AutoTokenizer
 
 
 def preprocess_training_examples(tokenizer, examples, max_length=384, stride=128):
+    """
+    Taken from https://huggingface.co/course/chapter7/7?fw=pt
+    """
     questions = [q.strip() for q in examples["question"]]
     inputs = tokenizer(
         questions,
@@ -61,6 +64,9 @@ def preprocess_training_examples(tokenizer, examples, max_length=384, stride=128
     return inputs
 
 def preprocess_validation_examples(tokenizer, examples, max_length=384, stride=128):
+    """
+    Taken from https://huggingface.co/course/chapter7/7?fw=pt
+    """
     questions = [q.strip() for q in examples["question"]]
     inputs = tokenizer(
         questions,

@@ -14,6 +14,9 @@ import collections
 
 
 def compute_metrics(metric, start_logits, end_logits, features, examples, n_best=20, max_answer_length=30):
+    """
+    Taken from https://huggingface.co/course/chapter7/7?fw=pt
+    """
     example_to_features = collections.defaultdict(list)
     for idx, feature in enumerate(features):
         example_to_features[feature["example_id"]].append(idx)
@@ -64,6 +67,7 @@ def compute_metrics(metric, start_logits, end_logits, features, examples, n_best
 
 def train_model(num_training_steps, num_train_epochs, model, tokenizer, datasets, train_dataloader, validation_dataset, eval_dataloader, 
                 accelerator,optimizer, lr_scheduler, output_dir, metric, repo):
+    """Taken from https://huggingface.co/course/chapter7/7?fw=pt"""
     progress_bar = tqdm(range(num_training_steps))
 
     for epoch in range(num_train_epochs):
